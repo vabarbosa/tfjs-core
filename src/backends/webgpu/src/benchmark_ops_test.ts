@@ -15,11 +15,12 @@
  * =============================================================================
  */
 
-import * as tf from './index';
+import * as tf from '@tensorflow/tfjs-core';
+import {describeWebGPU} from './test_utils';
 
-xdescribe('Ops benchmarks', () => {
+describeWebGPU('Ops benchmarks', () => {
   it('matMul', async () => {
-    await tf.ready;
+    // await tf.ready;
 
     const times = [];
 

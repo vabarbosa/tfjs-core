@@ -27,7 +27,14 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['jasmine', 'karma-typescript'],
     files: [
-      {pattern: 'src/**/*.ts'}
+      // {pattern: 'src/**/*.ts'},
+      // {pattern: 'node_modules/@tensorflow/tfjs-core//**/*_test.js'}
+      {pattern: '../../**/*.ts'}
+    ],
+    exclude: [
+      'backends/cpu/',
+      'backends/webgl/',
+      '**/node_modules/**/*'
     ],
     preprocessors: {'**/*.ts': ['karma-typescript']},
     karmaTypescriptConfig,
