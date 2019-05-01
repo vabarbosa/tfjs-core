@@ -162,6 +162,7 @@
         <tr>
           <th>Kernel</th>
           <th>Time(ms)</th>
+          <th>Input</th>
           <th>Output</th>
           <th>GPUPrograms</th>
         </tr>
@@ -169,7 +170,7 @@
       <tbody></tbody>
     </table>
   </div>
-  <script src="https://unpkg.com/@tensorflow/tfjs-core/dist/tf-core.js"></script>
+  <script src="./tf-core.js"></script>
   <script src="https://unpkg.com/@tensorflow/tfjs-layers/dist/tf-layers.js"></script>
   <script src="https://unpkg.com/@tensorflow/tfjs-converter/dist/tf-converter.js"></script>
   <script src="./posenet.js"></script>
@@ -345,7 +346,7 @@
         const nameSpan = document.createElement('span');
         nameSpan.setAttribute('title', k.scopes.slice(0, -1).join(' --> '));
         nameSpan.textContent = k.scopes[k.scopes.length - 1];
-        appendRow(tbody, nameSpan, k.time.toFixed(2), k.output, k.gpuProgramsInfo);
+        appendRow(tbody, nameSpan, k.time.toFixed(2), k.inputs, k.output, k.gpuProgramsInfo);
       });
     }
 
@@ -370,8 +371,9 @@
           kernels.push({
             scopes: scopes,
             time: Number.parseFloat(parts[1]),
-            output: parts[2].trim(),
-            gpuProgramsInfo: parts[4]
+            inputs: parts[2],
+            output: parts[3].trim(),
+            gpuProgramsInfo: parts[5]
           });
         } else {
           oldLog.call(oldLog, msg);
