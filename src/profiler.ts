@@ -27,8 +27,8 @@ export class Profiler {
     }
   }
 
-  profileKernel<T extends Tensor|Tensor[]>(name: string, f: () => T | Tensor[]):
-      T {
+  profileKernel<T extends Tensor|Tensor[]>(
+      name: string, inputs: any, f: () => T | Tensor[]): T {
     let result: T|Tensor[];
     const holdResultWrapperFn = () => {
       result = f();
@@ -47,7 +47,8 @@ export class Profiler {
           extraInfo = timing.getExtraProfileInfo();
         }
 
-        this.logger.logKernelProfile(name, r, vals, timing.kernelMs, extraInfo);
+        this.logger.logKernelProfile(
+            name, inputs, r, vals, timing.kernelMs, extraInfo);
       });
     });
 
@@ -57,18 +58,22 @@ export class Profiler {
 
 export class Logger {
   logKernelProfile(
-      name: string, result: Tensor, vals: TypedArray, timeMs: number,
-      extraInfo?: string) {
+      name: string, inputs: any, result: Tensor, vals: TypedArray,
+      timeMs: number, extraInfo?: string) {
     const time = util.rightPad(`${timeMs}ms`, 9);
     const paddedName = util.rightPad(name, 25);
     const rank = result.rank;
     const size = result.size;
     const shape = util.rightPad(result.shape.toString(), 14);
+    let inputsInfo = '';
+    for (const input in inputs) {
+      inputsInfo += JSON.stringify(inputs[input].shape) + ' '
+    }
 
     console.log(
-        `%c${paddedName}\t%c${time}\t%c${rank}D ${shape}\t%c${size}\t%c${
-            extraInfo}`,
-        'font-weight:bold', 'color:red', 'color:blue', 'color: orange',
-        'color: green');
+        `%c${paddedName}\t%c${time}\t%c${inputsInfo}\t%c${rank}D ${shape}\t%c${
+            size}\t%c${extraInfo}`,
+        'font-weight:bold', 'color:red', 'color:blue', 'color:blue',
+        'color: orange', 'color: green');
   }
 }
