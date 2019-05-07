@@ -32,7 +32,7 @@ function config({plugins = [], output = {}, external = []}) {
       node(),
       // Polyfill require() from dependencies.
       commonjs({
-        ignore: ['crypto'],
+        ignore: ['crypto', 'node-fetch'],
         include: 'node_modules/**',
       }),
       ...plugins
