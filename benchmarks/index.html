@@ -404,6 +404,9 @@
     }
 
     async function onPageLoad() {
+      await tf.ready;
+      console.log("which backend?");
+      console.log(tf.getBackend());
       var gui = new dat.gui.GUI();
       //gui.remember(obj);
       gui.add(state, 'numRuns').onChange(v => {
