@@ -170,8 +170,7 @@
       <tbody></tbody>
     </table>
   </div>
-  <script src="./tf-core.js"></script>
-  <script src="./tf-webgpu.js"></script>
+  <script src="./tf-webgpu.js?11"></script>
   <script src="https://unpkg.com/@tensorflow/tfjs-layers/dist/tf-layers.js"></script>
   <script src="https://unpkg.com/@tensorflow/tfjs-converter/dist/tf-converter.js"></script>
   <script src="./posenet.js"></script>
@@ -185,6 +184,7 @@
     }
 
     const zeros = tf.zeros([257, 257, 3]);
+    tf.add(zeros, tf.scalar(1));
     function predict(model) {
       //////////////////////////////////
       // Place model prediction code here.
@@ -263,7 +263,8 @@
       }
 
       if (res instanceof tf.Tensor) {
-        res.dataSync();
+        // res.dataSync();
+        await res.data();
       }
 
       const elapsed = performance.now() - start;
@@ -303,7 +304,8 @@
         }
 
         if (res instanceof tf.Tensor) {
-          res.dataSync();
+          // res.dataSync();
+          await res.data();
         }
 
         times.push(performance.now() - start);
@@ -333,7 +335,8 @@
       }
 
       if (res instanceof tf.Tensor) {
-        res.dataSync();
+        // res.dataSync();
+        await res.data();
       }
       const elapsed = performance.now() - start;
       await showMsg(null);
@@ -386,7 +389,8 @@
       }
 
       if (res instanceof tf.Tensor) {
-        res.dataSync();
+        // res.dataSync();
+        await res.data();
       }
 
       await showMsg(null);
