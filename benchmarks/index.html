@@ -170,11 +170,11 @@
       <tbody></tbody>
     </table>
   </div>
-  <!-- <script src="./tf-webgpu.js?11"></script> -->
   <script src="https://unpkg.com/@tensorflow/tfjs-layers@1.1.2/dist/tf-layers.js"></script>
   <script src="https://unpkg.com/@tensorflow/tfjs-converter@1.1.2/dist/tf-converter.js"></script>
   <!-- <script src="https://unpkg.com/@tensorflow/tfjs-core@1.2.0/dist/tf-core.js"></script> -->
   <script src="./tf-core.js"></script>
+  <script src="./tf-webgpu.js"></script>
   <script src="./posenet.js"></script>
   <script>
     'use strict';
@@ -185,8 +185,7 @@
       return await posenet.load();
     }
 
-    const zeros = tf.zeros([257, 257, 3]);
-    tf.add(zeros, tf.scalar(1));
+    let zeros;
     function predict(model) {
       //////////////////////////////////
       // Place model prediction code here.
@@ -410,7 +409,8 @@
     }
 
     async function onPageLoad() {
-      await tf.ready;
+      await tf.ready();
+      zeros = tf.zeros([257, 257, 3]);
       console.log("which backend?");
       console.log(tf.getBackend());
       var gui = new dat.gui.GUI();
