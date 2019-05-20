@@ -23,7 +23,7 @@ import {DataMover, DataType, ENV, KernelBackend, Rank, ShapeMap, Tensor, Tensor2
 import * as backend_util from '@tensorflow/tfjs-core/dist/backends/backend_util';
 import {computeOutShape} from '@tensorflow/tfjs-core/dist/ops/concat_util';
 import {Conv2DInfo} from '@tensorflow/tfjs-core/dist/ops/conv_util';
-import {upcastType} from '@tensorflow/tfjs-core/dist/types';
+import {TypedArray, upcastType} from '@tensorflow/tfjs-core/dist/types';
 import {assert} from '@tensorflow/tfjs-core/dist/util';
 import * as shaderc from '@webgpu/shaderc';
 
@@ -146,6 +146,18 @@ export class WebGPUBackend extends KernelBackend {
     return mapped.slice(0);
   }
 
+  // SHOULD ONLY WORK WHEN TENSOR VALUES ARE ON THE CPU
+  readSync(dataId: DataId): TypedArray {
+    const texData = this.tensorMap.get(dataId);
+    const {values} = texData;
+
+    if (values == null) {
+      throw new Error('VALUES SHOULD BE ON THE CPU');
+    }
+
+    return values;
+  }
+
   async read(dataId: object): Promise<Float32Array|Int32Array|Uint8Array> {
     if (!this.tensorMap.has(dataId)) {
       throw new Error(`Tensor ${dataId} was not registered!`);
@@ -201,6 +213,9 @@ export class WebGPUBackend extends KernelBackend {
       // https://www.khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
       let baseAlignment = 0;
       switch (d.length) {
+        case 0:
+          baseAlignment = 0;
+          break;
         case 1:
           baseAlignment = 1;
           break;
@@ -357,7 +372,7 @@ export class WebGPUBackend extends KernelBackend {
   argMax(x: Tensor, axis: number): Tensor {
     return this.argMinMaxReduce(x, axis, 'max');
   }
-  
+
   concat(tensors: Tensor[], axis: number): Tensor {
     if (tensors.length === 1) {
       return tensors[0];
