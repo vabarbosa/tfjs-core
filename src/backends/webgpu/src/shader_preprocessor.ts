@@ -34,13 +34,13 @@ export function getCoordsDataType(rank: number): string {
   }
 }
 
-type GLSLDataType = 'float'|'uint';
+type GLSLDataType = 'float'|'int';
 function mapToGlslTypes(type: DataType): GLSLDataType|DataType {
   if (type === 'float32') {
     return 'float';
   }
   if (type === 'int32') {
-    return 'uint';
+    return 'int';
   }
   return type;
 }
@@ -75,7 +75,7 @@ export function makeShader(
   // Output buffer.
   prefixSnippets.push(`
     layout(std430, set = 0, binding = 0) writeonly buffer ssbOut {
-      float result[];
+      ${mapToGlslTypes(outputData.dtype)} result[];
     };
   `);
 
@@ -123,6 +123,7 @@ export function makeShader(
 
   sources.push(program.userCode);
   const source = sources.join('\n');
+  console.log(source);
   return source;
 }
 
@@ -159,6 +160,10 @@ const SAMPLING_SNIPPETS = `
 
 const SET_OUTPUT_SNIPPET = `
   void setOutput(uint flatIndex, float value) {
+    result[flatIndex] = value;
+  }
+
+  void setOutput(uint flatIndex, int value) {
     result[flatIndex] = value;
   }
 `;

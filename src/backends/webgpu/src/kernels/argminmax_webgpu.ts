@@ -96,7 +96,7 @@ export class ArgMinMaxProgram implements WebGPUProgram {
       }
 
       if (gl_LocalInvocationID.x == 0) {
-        setOutput(flatOutputIndex, float(bestIndex));
+        setOutput(flatOutputIndex, bestIndex);
       }
     `;
 
@@ -157,7 +157,7 @@ export class ArgMinMaxProgram implements WebGPUProgram {
       void main() {
         const uvec2 coordInfo = getInputCoordInfo();
 
-        uint bestIndex = 0;
+        int bestIndex = 0;
         float bestValue = x[getInputIndex(coordInfo, bestIndex)];
 
         const uint Length = ${indexInputShape('axis')};
@@ -169,15 +169,17 @@ export class ArgMinMaxProgram implements WebGPUProgram {
             float candidate = x[getInputIndex(coordInfo, i)];
             if (candidate ${op} bestValue && !isnan(candidate)) {
               bestValue = candidate;
-              bestIndex = i;
+              bestIndex = int(i);
             }
           }
         }
 
         const uint flatOutputIndex = gl_GlobalInvocationID.y;
+
         ${
         reduceInSharedMemory ? sharedMemoryReduceSnippet :
-                               'setOutput(flatOutputIndex, float(bestIndex));'}
+                               'setOutput(flatOutputIndex, bestIndex);'}
+        setOutput(flatOutputIndex, bestIndex);
       }
     `;
   }

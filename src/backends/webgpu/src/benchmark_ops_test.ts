@@ -131,4 +131,24 @@ describeWebGPU('Ops benchmarks', () => {
           await a.data();
         });
   }, 60000);
+
+  fit('integer division implements floor divide', async () => {
+    const input = tf.tensor2d([1, 2, 4, 3], [2, 2]);
+
+    const result = tf.argMax(input, 1);
+
+    // const expectedResult = tf.tensor2d([1, 1], [1, 2], 'int32');
+    const d = await result.data();
+    console.log(d);
+    var arr = Array.from(d);
+    console.log(arr);
+    console.log(Math.abs(arr[1] - 1) < 0.0001);
+    // const d = result.div(tf.scalar(1, 'int32'));
+    // const dData = await d.data();
+    // console.log(dData);
+
+    // const test = tf.tensor1d([1, 0], 'int32').div(tf.scalar(1, 'int32'));
+    // const tData = await test.data();
+    // console.log(tData);
+  });
 });
