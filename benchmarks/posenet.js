@@ -817,7 +817,7 @@
           var offsetVectors = getOffsetVectors(heatMapCoordsBuffer, offsetsBuffer);
           return heatMapCoordsBuffer.toTensor()
               .mul(tf.scalar(outputStride, 'int32'))
-              .toFloat()
+              // .toFloat()
               .add(offsetVectors);
       });
   }
