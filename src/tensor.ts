@@ -368,6 +368,7 @@ export interface OpHandler {
     irfft(x: Tensor): Tensor
   };
   encodeBase64<T extends StringTensor>(x: T, pad: boolean): T;
+  decodeBase64<T extends StringTensor>(x: T): T;
 }
 
 // For tracking tensor creation and disposal.
@@ -1393,6 +1394,11 @@ export class Tensor<R extends Rank = Rank> {
   encodeBase64<T extends StringTensor>(this: T, pad = false): T {
     this.throwIfDisposed();
     return opHandler.encodeBase64(this, pad);
+  }
+
+  decodeBase64<T extends StringTensor>(this: T): T {
+    this.throwIfDisposed();
+    return opHandler.decodeBase64(this);
   }
 }
 Object.defineProperty(Tensor, Symbol.hasInstance, {

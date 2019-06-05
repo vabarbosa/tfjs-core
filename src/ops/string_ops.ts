@@ -28,6 +28,11 @@ function toUrlSafe(str: string): string {
   return str.replace(/\+/g, '-').replace(/\//g, '_');
 }
 
+// revert url safe replacement of + and /
+function fromUrlSafe(str: string): string {
+  return str.replace(/-/g, '+').replace(/_/g, '/');
+}
+
 // Convert from UTF-16 character to UTF-8 multibyte sequence
 // tslint:disable-next-line: max-line-length
 // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
@@ -57,6 +62,39 @@ function utf16ToUtf8Multibyte(char: string): string {
         String.fromCharCode(0x80 | ((cp >>> 6) & 0x3f)) +
         String.fromCharCode(0x80 | (cp & 0x3f)));
   }
+}
+
+// Convert UTF-8 multibyte sequence to UTF-16 character
+// tslint:disable-next-line: max-line-length
+// https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+function utf8MultibyteToUtf16(seq: string): string {
+  let cp = 0;
+
+  // get the Unicode code point from UTF-8 multibyte sequence
+  // https://en.wikipedia.org/wiki/UTF-8#Description
+  switch (seq.length) {
+    // two bytes
+    case 2:
+      cp = ((0x1f & seq.charCodeAt(0)) << 6) + (0x3f & seq.charCodeAt(1));
+      break;
+    // three bytes
+    case 3:
+      cp = ((0x0f & seq.charCodeAt(0)) << 12) +
+          ((0x3f & seq.charCodeAt(1)) << 6) + (0x3f & seq.charCodeAt(2));
+      break;
+    // four bytes
+    case 4:
+      cp = ((0x07 & seq.charCodeAt(0)) << 18) +
+          ((0x3f & seq.charCodeAt(1)) << 12) +
+          ((0x3f & seq.charCodeAt(2)) << 6) + (0x3f & seq.charCodeAt(3));
+      break;
+    // one byte
+    default:
+      return seq;
+  }
+
+  // convert Unicode code point to UTF-16
+  return String.fromCodePoint(cp);
 }
 
 /**
@@ -106,4 +144,48 @@ function encodeBase64_<T extends StringTensor>(
   return Tensor.make($str.shape, {values: resultValues}, $str.dtype) as T;
 }
 
+/**
+ * Decodes the values of a `tf.Tensor` (of dtype `string`) from Base64.
+ *
+ * Given a String tensor of Base64 encoded values, returns a new tensor with the
+ * decoded values.
+ *
+ * en.wikipedia.org/wiki/Base64
+ *
+ * ```js
+ * const y = tf.scalar('YW55dGhpbmcgZWxzZSBmb3IgeW91IGdvaW5nIG9uIGhlcmU_',
+ *  'string');
+ *
+ * y.decodeBase64().print();
+ * ```
+ * @param str The input `tf.Tensor` of dtype `string` to decode.
+ */
+/** @doc {heading: 'Operations', subheading: 'String'} */
+function decodeBase64_<T extends StringTensor>(str: StringTensor|Tensor): T {
+  const $str = convertToTensor(str, 'str', 'decodeBase64', 'string');
+
+  const multibyteSeq =
+      // tslint:disable-next-line: max-line-length
+      /[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3}/g;
+
+  const resultValues = new Array($str.size);
+  const values = $str.dataSync();
+
+  for (let i = 0; i < values.length; ++i) {
+    let sVal = fromUrlSafe(values[i].toString());
+    if (runningInNode) {
+      sVal = Buffer.from(sVal, 'base64').toString();
+    } else {
+      // decode from base64 then
+      // convert to multibyte sequences back to UTF-16
+      sVal = atob(sVal).replace(multibyteSeq, utf8MultibyteToUtf16);
+    }
+
+    resultValues[i] = sVal;
+  }
+
+  return Tensor.make($str.shape, {values: resultValues}, $str.dtype) as T;
+}
+
 export const encodeBase64 = op({encodeBase64_});
+export const decodeBase64 = op({decodeBase64_});
