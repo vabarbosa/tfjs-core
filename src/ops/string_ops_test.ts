@@ -66,3 +66,30 @@ describeWithFlags('encodeBase64', ALL_ENVS, () => {
     expectArraysEqual(await r.data(), b64ArrPad);
   });
 });
+
+describeWithFlags('decodeBase64', ALL_ENVS, () => {
+  it('scalar', async () => {
+    const a = tf.scalar(b64Arr[1], 'string');
+    const r = tf.decodeBase64(a);
+    expect(r.shape).toEqual([]);
+    expectArraysEqual(await r.data(), txtArr[1]);
+  });
+  it('1D padded', async () => {
+    const a = tf.tensor1d([b64ArrPad[2]], 'string');
+    const r = tf.decodeBase64(a);
+    expect(r.shape).toEqual([1]);
+    expectArraysEqual(await r.data(), [txtArr[2]]);
+  });
+  it('2D', async () => {
+    const a = tf.tensor2d(b64Arr, [2, 4], 'string');
+    const r = tf.decodeBase64(a);
+    expect(r.shape).toEqual([2, 4]);
+    expectArraysEqual(await r.data(), txtArr);
+  });
+  it('3D padded', async () => {
+    const a = tf.tensor3d(b64ArrPad, [2, 2, 2], 'string');
+    const r = tf.decodeBase64(a);
+    expect(r.shape).toEqual([2, 2, 2]);
+    expectArraysEqual(await r.data(), txtArr);
+  });
+});
